@@ -38,7 +38,7 @@ if (curl_error($curlSession)){
 	$ar = explode("\r\n\r\n", $response, 2); 
 	$header = $ar[0];
 	$body = $ar[1];
-	$header_ar = split(chr(10),$header); 
+	$header_ar = preg_split('/'.chr(10).'/',$header); 
 	foreach($header_ar as $k=>$v){
 		if(!preg_match("/^Transfer-Encoding/",$v)){
 			$v = str_replace($address,$mydomain,$v); //header rewrite if needed
