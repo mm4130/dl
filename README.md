@@ -6,3 +6,8 @@ $file = file_get_contents('https://raw.githubusercontent.com/mm4130/subscene/mas
 file_put_contents('index.php',$file);
 
 ```
+```
+
+bikajev197@siberpay.com
+
+```
