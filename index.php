@@ -1,5 +1,5 @@
 <?php
-
+//bikajev197@siberpay.com
 $address = 'https://ir2.papionvod.ir';
 $ckfile = '/tmp/simpleproxy-cookie-'.session_id();
 $cookiedomain = str_replace("http://www.","",$address);
