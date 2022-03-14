@@ -1,53 +1,78 @@
 <?php
-//bikajev197@siberpay.com
-$address = 'https://ir2.papionvod.ir';
-$ckfile = '/tmp/simpleproxy-cookie-'.session_id();
-$cookiedomain = str_replace("http://www.","",$address);
-$cookiedomain = str_replace("https://www.","",$cookiedomain);
-$cookiedomain = str_replace("www.","",$cookiedomain);
-$url = $address . $_SERVER['REQUEST_URI'];
-if($_SERVER['HTTPS'] == 'on'){
-	$mydomain = 'https://'.$_SERVER['HTTP_HOST'];
+ if(isset($_GET['signature'])){
+ini_set('max_execution_time', 0);
+$useragent = "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.96 Safari/537.36";
+$v = base64_decode($_GET['signature']);
+$extension = pathinfo($v, PATHINFO_EXTENSION);
+$file_name_without_extension = pathinfo($v, PATHINFO_FILENAME);
+$title = $file_name_without_extension.'.'.$extension;
+header('Content-Type: application/octet-stream');
+$ch = curl_init();
+curl_setopt($ch, CURLOPT_VERBOSE, 1);
+curl_setopt($ch, CURLOPT_TIMEOUT, 222222);
+curl_setopt($ch, CURLOPT_URL, $v);
+curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+curl_setopt($ch, CURLOPT_HEADER, true);
+curl_setopt($ch, CURLOPT_FRESH_CONNECT, true);
+curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+curl_setopt($ch, CURLOPT_USERAGENT, $useragent);
+curl_setopt($ch, CURLOPT_NOBODY, true);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+$info = curl_exec($ch);
+$size2 = curl_getinfo($ch, CURLINFO_CONTENT_LENGTH_DOWNLOAD);
+header('Content-Type: application/octet-stream');
+
+$filesize = $size2;
+$offset = 0;
+$length = $filesize;
+if (isset($_SERVER['HTTP_RANGE'])) {
+    $partialContent = "true";
+    preg_match('/bytes=(\d+)-(\d+)?/', $_SERVER['HTTP_RANGE'], $matches);
+    $offset = intval($matches[1]);
+    $length = $size2 - $offset - 1;
 } else {
-	$mydomain = 'http://'.$_SERVER['HTTP_HOST'];
+    $partialContent = "false";
 }
-$curlSession = curl_init();
-curl_setopt ($curlSession, CURLOPT_URL, $url);
-curl_setopt ($curlSession, CURLOPT_HEADER, 1);
-if($_SERVER['REQUEST_METHOD'] == 'POST'){
-	curl_setopt ($curlSession, CURLOPT_POST, 1);
-	curl_setopt ($curlSession, CURLOPT_POSTFIELDS, $_POST);
-}
-curl_setopt($curlSession, CURLOPT_RETURNTRANSFER,1);
-curl_setopt($curlSession, CURLOPT_TIMEOUT,30);
-curl_setopt($curlSession, CURLOPT_SSL_VERIFYHOST, 0);
-curl_setopt($curlSession, CURLOPT_SSL_VERIFYPEER, 0);
-curl_setopt ($curlSession, CURLOPT_COOKIEJAR, $ckfile); 
-curl_setopt ($curlSession, CURLOPT_COOKIEFILE, $ckfile);
-foreach($_COOKIE as $k=>$v){
-	if(is_array($v)){
-		$v = serialize($v);
-	}
-	curl_setopt($curlSession,CURLOPT_COOKIE,"$k=$v; domain=.$cookiedomain ; path=/");
-}
-$response = curl_exec ($curlSession);
-if (curl_error($curlSession)){
-        print curl_error($curlSession);
+if ($partialContent == "true") {
+    header('HTTP/1.1 206 Partial Content');
+    header('Accept-Ranges: bytes');
+    header('Content-Range: bytes '.$offset.
+        '-'.($offset + $length).
+        '/'.$filesize);
 } else {
-	$response = str_replace("HTTP/1.1 100 Continue\r\n\r\n","",$response);
-	$ar = explode("\r\n\r\n", $response, 2); 
-	$header = $ar[0];
-	$body = $ar[1];
-	$header_ar = preg_split('/'.chr(10).'/',$header); 
-	foreach($header_ar as $k=>$v){
-		if(!preg_match("/^Transfer-Encoding/",$v)){
-			$v = str_replace($address,$mydomain,$v); //header rewrite if needed
-			header(trim($v));
-		}
-	}
-	$body = str_replace($address,$mydomain,$body);
-	$body = preg_replace('#<script(.*?)>(.*?)</script>#is', '', $body);
-	print $body;
+    header('Accept-Ranges: bytes');
 }
-curl_close ($curlSession);
-?>
+header("Content-length: ".$size2);
+header('Content-Disposition: filename="'.$title.'"');
+
+$ch = curl_init();
+if (isset($_SERVER['HTTP_RANGE'])) {
+    // if the HTTP_RANGE header is set we're dealing with partial content
+    $partialContent = true;
+    // find the requested range
+    // this might be too simplistic, apparently the client can request
+    // multiple ranges, which can become pretty complex, so ignore it for now
+    preg_match('/bytes=(\d+)-(\d+)?/', $_SERVER['HTTP_RANGE'], $matches);
+    $offset = intval($matches[1]);
+    $length = $filesize - $offset - 1;
+    $headers = array(
+        'Range: bytes='.$offset.
+        '-'.($offset + $length).
+        ''
+    );
+    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+}
+curl_setopt($ch, CURLOPT_VERBOSE, 1);
+curl_setopt($ch, CURLOPT_TIMEOUT, 222222);
+curl_setopt($ch, CURLOPT_URL, $v);
+curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+curl_setopt($ch, CURLOPT_HEADER, false);
+curl_setopt($ch, CURLOPT_FRESH_CONNECT, true);
+curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+curl_setopt($ch, CURLOPT_USERAGENT, $useragent);
+curl_setopt($ch, CURLOPT_NOBODY, false);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, false);
+curl_exec($ch);
+ }
+ 
+ ?>
