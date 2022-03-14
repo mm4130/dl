@@ -1,6 +1,6 @@
 <?php
 
-$address = 'https://subscene.com';
+$address = 'https://ir2.papionvod.ir';
 $ckfile = '/tmp/simpleproxy-cookie-'.session_id();
 $cookiedomain = str_replace("http://www.","",$address);
 $cookiedomain = str_replace("https://www.","",$cookiedomain);
