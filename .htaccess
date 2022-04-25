@@ -1,7 +1,7 @@
 Options +FollowSymLinks
 RewriteEngine on
 RewriteRule download/(.*)$ download.php?signature=$1 [B]
-RewriteRule sub/(.*)$ sub.php?signature=$1 [B]
+RewriteRule zip/(.*)$ zip.php?signature=$1 [B]
 RewriteRule pic/(.*)$ pic.php?signature=$1 [B]
 
 # php -- BEGIN cPanel-generated handler, do not edit
