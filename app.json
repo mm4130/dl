@@ -8,8 +8,10 @@
   ],
   "website": "https://github.com/mm34ir",
   "repository": "https://github.com/mm34ir/dl",
+  "success_url": "/",
   "logo": "https://www.pngmart.com/files/11/Chat-Logo-PNG-Image.png",
   "env": {
+    "BUILDPACK_URL": "https://github.com/heroku/heroku-buildpack-php",
     "BOT_TOKEN": {
       "description": "Bot token",
       "required": true
